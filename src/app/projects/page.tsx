@@ -1,20 +1,32 @@
-import Link from 'next/link'
+'use client';
 
-const projects = [
-  {
-    id: 1,
-    title: "AI-Powered Content Generator",
-    description: "A machine learning tool that generates high-quality blog posts and social media content.",
-    techStack: ["Python", "TensorFlow", "React"],
-    tags: ["AI", "Content", "SaaS"],
-    lookingFor: "Marketing & Growth",
-    revenueShare: "70/30",
-    author: "Alex Chen",
-  },
-  // Add more sample projects here
-]
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { getProjects, Project } from '@/lib/api';
 
 export default function ProjectsPage() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const data = await getProjects();
+        setProjects(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load projects');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  if (loading) return <div className="text-center py-8">Loading...</div>;
+  if (error) return <div className="text-center py-8 text-red-500">Error: {error}</div>;
+
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
       <div className="flex flex-col md:flex-row gap-8">
@@ -37,24 +49,6 @@ export default function ProjectsPage() {
                 <label className="flex items-center space-x-2">
                   <input type="checkbox" className="rounded border-input" />
                   <span className="text-sm">Mobile Apps</span>
-                </label>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">Tech Stack</h3>
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded border-input" />
-                  <span className="text-sm">React</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded border-input" />
-                  <span className="text-sm">Python</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="checkbox" className="rounded border-input" />
-                  <span className="text-sm">Node.js</span>
                 </label>
               </div>
             </div>
@@ -89,16 +83,6 @@ export default function ProjectsPage() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     {project.description}
                   </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {project.techStack.map((tech) => (
-                      <span
-                        key={tech}
-                        className="px-2 py-1 text-xs rounded-full bg-secondary text-secondary-foreground"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
                   <div className="mt-4 pt-4 border-t flex justify-between items-center">
                     <div className="text-sm text-muted-foreground">
                       Looking for: {project.lookingFor}
@@ -114,5 +98,5 @@ export default function ProjectsPage() {
         </main>
       </div>
     </div>
-  )
+  );
 } 
